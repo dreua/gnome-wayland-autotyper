@@ -1,0 +1,14 @@
+{
+  "name": "AutoTyper",
+  "description": "Wayland Text Injector. Native text typing bridge via D-Bus for injecting text into active windows securely and efficiently.",
+  "uuid": "autotyper@mbxnd.com",
+  "shell-version": [
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "50"
+  ],
+  "url": "https://mbxnd.com/wayland-autotyper"
+}
