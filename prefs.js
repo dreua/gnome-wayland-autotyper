@@ -1,4 +1,5 @@
 import Gio from 'gi://Gio';
+import Gtk from 'gi://Gtk';
 import Adw from 'gi://Adw';
 import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -20,7 +21,7 @@ export default class AutoTyperPreferences extends ExtensionPreferences {
         const delayRow = new Adw.SpinRow({
             title: 'Clipboard Restore Delay (ms)',
             subtitle: 'Time to wait before restoring original clipboard contents. Increase this if target apps paste the wrong text on slow machines.',
-            adjustment: new Adw.Adjustment({
+            adjustment: new Gtk.Adjustment({
                 lower: 50,
                 upper: 5000,
                 step_increment: 50,
