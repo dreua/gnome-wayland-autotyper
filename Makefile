@@ -16,7 +16,7 @@ zip: clean compile
 	@python3 -c "import zipfile, os; \
 		z = zipfile.ZipFile('$(ZIP_NAME)', 'w', zipfile.ZIP_DEFLATED); \
 		[z.write(f) for f in ['extension.js', 'metadata.json', 'prefs.js']]; \
-		[z.write(os.path.join('schemas', f)) for f in os.listdir('schemas') if os.path.isfile(os.path.join('schemas', f))]"
+		[z.write(os.path.join('schemas', f)) for f in os.listdir('schemas') if f.endswith('.xml')]"
 	@echo "Done! You can now upload $(ZIP_NAME) to extensions.gnome.org"
 
 clean:

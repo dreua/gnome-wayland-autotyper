@@ -5,6 +5,10 @@ import GLib from 'gi://GLib';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
+function _logError(msg) {
+    console.error(`AutoTyper: ${msg}`);
+}
+
 const DBUS_SCHEMA = `
 <node>
   <interface name="org.gnome.Shell.Extensions.AutoTyper">
@@ -21,13 +25,14 @@ export default class AutoTyperExtension extends Extension {
         this._token = GLib.uuid_string_random();
         let runtimeDir = GLib.getenv('XDG_RUNTIME_DIR') || '/tmp';
         this._tokenPath = runtimeDir + '/autotyper.token';
+        this._timeoutId = 0;
         
         try {
             let file = Gio.File.new_for_path(this._tokenPath);
             let encoder = new TextEncoder();
             file.replace_contents(encoder.encode(this._token), null, false, Gio.FileCreateFlags.PRIVATE, null);
         } catch (e) {
-            console.error("AutoTyper: Failed to write token file: " + e.message);
+            _logError(`Failed to write token file: ${e.message}`);
         }
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(DBUS_SCHEMA, this);
@@ -37,12 +42,16 @@ export default class AutoTyperExtension extends Extension {
             let seat = global.stage.context.get_backend().get_default_seat();
             this._virtualDevice = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
         } catch (e) {
-            console.error("AutoTyper: Failed to create virtual keyboard device: " + e.message);
+            _logError(`Failed to create virtual keyboard device: ${e.message}`);
         }
     }
 
     disable() {
         this._settings = null;
+        if (this._timeoutId) {
+            GLib.Source.remove(this._timeoutId);
+            this._timeoutId = 0;
+        }
         if (this._tokenPath) {
             try {
                 let file = Gio.File.new_for_path(this._tokenPath);
@@ -50,7 +59,7 @@ export default class AutoTyperExtension extends Extension {
                     file.delete(null);
                 }
             } catch (e) {
-                console.error("AutoTyper: Failed to delete token file: " + e.message);
+                _logError(`Failed to delete token file: ${e.message}`);
             }
             this._tokenPath = null;
         }
@@ -60,18 +69,13 @@ export default class AutoTyperExtension extends Extension {
             this._dbusImpl = null;
         }
         if (this._virtualDevice) {
-            try {
-                this._virtualDevice.run_dispose();
-            } catch (e) {
-                console.error("AutoTyper: Failed to dispose virtual device: " + e.message);
-            }
             this._virtualDevice = null;
         }
     }
 
     TypeText(token, text) {
         if (token !== this._token) {
-            console.error("AutoTyper: Unauthorized access attempt with invalid token.");
+            _logError("Unauthorized access attempt with invalid token.");
             return;
         }
 
@@ -81,7 +85,7 @@ export default class AutoTyperExtension extends Extension {
                 Main.inputMethod.commit(text);
                 return;
             } catch (e) {
-                console.error("AutoTyper: Main.inputMethod.commit failed: " + e.message);
+                _logError(`Main.inputMethod.commit failed: ${e.message}`);
             }
         }
         
@@ -110,21 +114,27 @@ export default class AutoTyperExtension extends Extension {
                         delay = this._settings.get_int('restore-delay-ms');
                     }
 
+                    if (this._timeoutId) {
+                        GLib.Source.remove(this._timeoutId);
+                        this._timeoutId = 0;
+                    }
+
                     // Restore original clipboard after application pastes the text
-                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+                    this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
                         if (currentText !== null) {
                             clipboard.set_text(St.ClipboardType.CLIPBOARD, currentText);
                         } else {
                             clipboard.set_text(St.ClipboardType.CLIPBOARD, "");
                         }
+                        this._timeoutId = 0;
                         return GLib.SOURCE_REMOVE;
                     });
                 });
             } catch (e) {
-                console.error("AutoTyper: Clipboard + Ctrl+V fallback failed: " + e.message);
+                _logError(`Clipboard + Ctrl+V fallback failed: ${e.message}`);
             }
         } else {
-            console.error("AutoTyper: No virtual device available for fallback paste.");
+            _logError("No virtual device available for fallback paste.");
         }
     }
 }
