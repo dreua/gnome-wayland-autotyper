@@ -17,6 +17,7 @@ const DBUS_SCHEMA = `
 
 export default class AutoTyperExtension extends Extension {
     enable() {
+        this._settings = this.getSettings();
         this._token = GLib.uuid_string_random();
         let runtimeDir = GLib.getenv('XDG_RUNTIME_DIR') || '/tmp';
         this._tokenPath = runtimeDir + '/autotyper.token';
@@ -41,6 +42,7 @@ export default class AutoTyperExtension extends Extension {
     }
 
     disable() {
+        this._settings = null;
         if (this._tokenPath) {
             try {
                 let file = Gio.File.new_for_path(this._tokenPath);
@@ -102,8 +104,14 @@ export default class AutoTyperExtension extends Extension {
                     this._virtualDevice.notify_keyval(time * 1000, Clutter.KEY_v, Clutter.KeyState.RELEASED);
                     this._virtualDevice.notify_keyval(time * 1000, Clutter.KEY_Control_L, Clutter.KeyState.RELEASED);
                     
+                    // Retrieve configured delay
+                    let delay = 150;
+                    if (this._settings) {
+                        delay = this._settings.get_int('restore-delay-ms');
+                    }
+
                     // Restore original clipboard after application pastes the text
-                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 150, () => {
+                    GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
                         if (currentText !== null) {
                             clipboard.set_text(St.ClipboardType.CLIPBOARD, currentText);
                         } else {

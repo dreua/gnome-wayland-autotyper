@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.autotyper" path="/org/gnome/shell/extensions/autotyper/">
+    <key name="restore-delay-ms" type="i">
+      <default>150</default>
+      <summary>Clipboard Restore Delay (ms)</summary>
+      <description>Delay before restoring the original clipboard content after injecting text.</description>
+    </key>
+  </schema>
+</schemalist>

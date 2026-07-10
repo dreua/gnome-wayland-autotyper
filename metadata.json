@@ -10,5 +10,6 @@
     "49",
     "50"
   ],
-  "url": "https://mbxnd.com/wayland-autotyper"
+  "url": "https://mbxnd.com/wayland-autotyper",
+  "settings-schema": "org.gnome.shell.extensions.autotyper"
 }
