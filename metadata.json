@@ -1,6 +1,6 @@
 {
   "name": "AutoTyper",
-  "description": "Wayland Text Injector. Native text typing bridge via D-Bus for injecting text into active windows securely and efficiently.",
+  "description": "Wayland Text Injector. Native text typing bridge via D-Bus for injecting text into active windows securely and efficiently. NOTE: This extension accesses and modifies the clipboard to perform paste actions.",
   "uuid": "autotyper@mbxnd.com",
   "shell-version": [
     "45",
@@ -10,6 +10,6 @@
     "49",
     "50"
   ],
-  "url": "https://mbxnd.com/wayland-autotyper",
+  "url": "https://github.com/maxxxbond/gnome-wayland-autotyper",
   "settings-schema": "org.gnome.shell.extensions.autotyper"
 }
